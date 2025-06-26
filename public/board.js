@@ -10,6 +10,10 @@ export default class Board {
         this.paddleRotation = 0;
         this.paddleLength = this.radius * 0.4;
         this.paddleWidth = 10;
+        this.paddleDistance = Math.max(
+            this.radius - this.paddleLength / 2 - 20,
+            0
+        );
         this.vertices = this.collisionEngine.vertices;
     }
 
@@ -54,13 +58,22 @@ export default class Board {
             ctx.stroke();
         }
 
-        // draw rotating paddles
+        // draw rotating paddles around the octagon edge
         ctx.save();
         ctx.rotate(this.paddleRotation);
         ctx.fillStyle = '#999';
-        ctx.fillRect(-this.paddleLength / 2, -this.paddleWidth / 2, this.paddleLength, this.paddleWidth);
-        ctx.rotate(Math.PI / 2);
-        ctx.fillRect(-this.paddleLength / 2, -this.paddleWidth / 2, this.paddleLength, this.paddleWidth);
+        for (let i = 0; i < 4; i++) {
+            ctx.save();
+            ctx.rotate(i * Math.PI / 2);
+            ctx.translate(this.paddleDistance, 0);
+            ctx.fillRect(
+                -this.paddleLength / 2,
+                -this.paddleWidth / 2,
+                this.paddleLength,
+                this.paddleWidth
+            );
+            ctx.restore();
+        }
         ctx.restore();
 
         ctx.restore();
