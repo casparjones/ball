@@ -1,4 +1,4 @@
-class CollisionEngine {
+export default class CollisionEngine {
     constructor(centerX, centerY, radius, sides = 8) {
         this.centerX = centerX;
         this.centerY = centerY;

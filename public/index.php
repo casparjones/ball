@@ -16,7 +16,6 @@ $canvasHeight = 800;
         <canvas id="gameCanvas" width="<?php echo $canvasWidth; ?>" height="<?php echo $canvasHeight; ?>"></canvas>
     </div>
 
-    <script src="collision.js"></script>
-    <script src="game.js"></script>
+    <script type="module" src="game.js"></script>
 </body>
 </html>
