@@ -15,3 +15,11 @@ test('checkCollision detects edge collision', () => {
   assert.ok(col.penetration > 0);
   assert.equal(Math.round(col.point.x), 10);
 });
+
+test('rotation affects collision detection', () => {
+  const engine = new CollisionEngine(0, 0, 10, 4);
+  engine.setRotation(Math.PI / 4);
+  const ball = { x: 8, y: 0, vx: 0, vy: 0, radius: 2 };
+  const col = engine.checkCollision(ball);
+  assert.ok(col);
+});
