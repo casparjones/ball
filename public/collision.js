@@ -7,8 +7,11 @@ export default class CollisionEngine {
         this.rotation = 0;
         this.paddleRotation = 0;
         this.paddleLength = this.radius * 0.4;
+        // Keep paddle edges aligned with the board boundary. Removing the
+        // previous 20px offset prevents balls from slipping between the
+        // paddles and the octagon.
         this.paddleDistance = Math.max(
-            this.radius - this.paddleLength / 2 - 20,
+            this.radius - this.paddleLength / 2,
             0
         );
         this.vertices = this.generateVertices();
