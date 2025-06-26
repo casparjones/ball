@@ -4,8 +4,20 @@ export default class CollisionEngine {
         this.centerY = centerY;
         this.radius = radius;
         this.sides = sides;
+        this.rotation = 0;
+        this.paddleRotation = 0;
+        this.paddleLength = this.radius * 0.4;
         this.vertices = this.generateVertices();
         this.edges = this.generateEdges();
+        this.paddleEdges = this.generatePaddleEdges();
+    }
+
+    setRotation(angle) {
+        this.rotation = angle;
+    }
+
+    setPaddleRotation(angle) {
+        this.paddleRotation = angle;
     }
     
     generateVertices() {
@@ -42,17 +54,74 @@ export default class CollisionEngine {
         }
         return edges;
     }
+
+    generatePaddleEdges() {
+        const l = this.paddleLength / 2;
+        return [
+            { start: { x: -l, y: 0 }, end: { x: l, y: 0 } },
+            { start: { x: 0, y: -l }, end: { x: 0, y: l } }
+        ];
+    }
+
+    rotatePoint(point) {
+        const cos = Math.cos(this.rotation);
+        const sin = Math.sin(this.rotation);
+        return {
+            x: point.x * cos - point.y * sin,
+            y: point.x * sin + point.y * cos
+        };
+    }
+
+    getRotatedEdges() {
+        return this.edges.map(e => {
+            const start = this.rotatePoint(e.start);
+            const end = this.rotatePoint(e.end);
+            const dx = end.x - start.x;
+            const dy = end.y - start.y;
+            const length = Math.sqrt(dx * dx + dy * dy);
+            return {
+                start,
+                end,
+                normal: { x: -dy / length, y: dx / length },
+                length
+            };
+        });
+    }
+
+    getRotatedPaddleEdges() {
+        const cos = Math.cos(this.paddleRotation);
+        const sin = Math.sin(this.paddleRotation);
+        return this.paddleEdges.map(e => {
+            const start = {
+                x: e.start.x * cos - e.start.y * sin,
+                y: e.start.x * sin + e.start.y * cos
+            };
+            const end = {
+                x: e.end.x * cos - e.end.y * sin,
+                y: e.end.x * sin + e.end.y * cos
+            };
+            const dx = end.x - start.x;
+            const dy = end.y - start.y;
+            const length = Math.sqrt(dx * dx + dy * dy);
+            return {
+                start,
+                end,
+                normal: { x: -dy / length, y: dx / length },
+                length
+            };
+        });
+    }
     
     isPointInsidePolygon(x, y) {
         const relativeX = x - this.centerX;
         const relativeY = y - this.centerY;
-        
+
         let inside = true;
-        for (const edge of this.edges) {
+        for (const edge of this.getRotatedEdges()) {
             const toPointX = relativeX - edge.start.x;
             const toPointY = relativeY - edge.start.y;
             const distance = toPointX * edge.normal.x + toPointY * edge.normal.y;
-            
+
             if (distance > 0) {
                 inside = false;
                 break;
@@ -64,7 +133,7 @@ export default class CollisionEngine {
     getClosestPointOnEdge(ballX, ballY, edge) {
         const relativeX = ballX - this.centerX;
         const relativeY = ballY - this.centerY;
-        
+
         const edgeX = edge.end.x - edge.start.x;
         const edgeY = edge.end.y - edge.start.y;
         
@@ -88,7 +157,8 @@ export default class CollisionEngine {
         let collision = null;
         let minDistance = Infinity;
         
-        for (const edge of this.edges) {
+        const edges = [...this.getRotatedEdges(), ...this.getRotatedPaddleEdges()];
+        for (const edge of edges) {
             const closestPoint = this.getClosestPointOnEdge(ball.x, ball.y, edge);
             
             const distanceX = ballRelativeX - closestPoint.x;
@@ -168,4 +238,9 @@ export default class CollisionEngine {
         
         return false;
     }
+}
+
+// Expose class globally for non-module environments
+if (typeof window !== 'undefined') {
+    window.CollisionEngine = CollisionEngine;
 }
