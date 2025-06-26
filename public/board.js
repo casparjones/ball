@@ -7,11 +7,17 @@ export default class Board {
         this.motion = motionEngine;
         this.collisionEngine = collisionEngine;
         this.rotation = 0;
+        this.paddleRotation = 0;
+        this.paddleLength = this.radius * 0.4;
+        this.paddleWidth = 10;
         this.vertices = this.collisionEngine.vertices;
     }
 
     update() {
         this.motion.updateRotation(this);
+        this.paddleRotation += this.motion.rotationSpeed;
+        this.collisionEngine.setRotation(this.rotation);
+        this.collisionEngine.setPaddleRotation(this.paddleRotation);
     }
 
     draw(ctx) {
@@ -48,6 +54,20 @@ export default class Board {
             ctx.stroke();
         }
 
+        // draw rotating paddles
+        ctx.save();
+        ctx.rotate(this.paddleRotation);
+        ctx.fillStyle = '#999';
+        ctx.fillRect(-this.paddleLength / 2, -this.paddleWidth / 2, this.paddleLength, this.paddleWidth);
+        ctx.rotate(Math.PI / 2);
+        ctx.fillRect(-this.paddleLength / 2, -this.paddleWidth / 2, this.paddleLength, this.paddleWidth);
+        ctx.restore();
+
         ctx.restore();
     }
+}
+
+// Expose class globally for non-module environments
+if (typeof window !== 'undefined') {
+    window.Board = Board;
 }
