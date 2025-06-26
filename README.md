@@ -8,7 +8,7 @@ Dieses Projekt ist ein HTML5-Canvas-basiertes Spiel, das realistische Physik-Sim
 
 ## GitHub Page
 
-Eine Live-Demo ist unter <https://yourusername.github.io/ball/> verfügbar.
+Eine Live-Demo ist unter <https://casparjones.github.io/ball/> verfügbar.
 
 ## Features
 
