@@ -7,6 +7,10 @@ export default class CollisionEngine {
         this.rotation = 0;
         this.paddleRotation = 0;
         this.paddleLength = this.radius * 0.4;
+        this.paddleDistance = Math.max(
+            this.radius - this.paddleLength / 2 - 20,
+            0
+        );
         this.vertices = this.generateVertices();
         this.edges = this.generateEdges();
         this.paddleEdges = this.generatePaddleEdges();
@@ -56,10 +60,13 @@ export default class CollisionEngine {
     }
 
     generatePaddleEdges() {
-        const l = this.paddleLength / 2;
+        const half = this.paddleLength / 2;
+        const d = this.paddleDistance;
         return [
-            { start: { x: -l, y: 0 }, end: { x: l, y: 0 } },
-            { start: { x: 0, y: -l }, end: { x: 0, y: l } }
+            { start: { x: d - half, y: 0 }, end: { x: d + half, y: 0 } },
+            { start: { x: 0, y: d - half }, end: { x: 0, y: d + half } },
+            { start: { x: -d - half, y: 0 }, end: { x: -d + half, y: 0 } },
+            { start: { x: 0, y: -d - half }, end: { x: 0, y: -d + half } }
         ];
     }
 
@@ -89,8 +96,9 @@ export default class CollisionEngine {
     }
 
     getRotatedPaddleEdges() {
-        const cos = Math.cos(this.paddleRotation);
-        const sin = Math.sin(this.paddleRotation);
+        const total = this.rotation + this.paddleRotation;
+        const cos = Math.cos(total);
+        const sin = Math.sin(total);
         return this.paddleEdges.map(e => {
             const start = {
                 x: e.start.x * cos - e.start.y * sin,
