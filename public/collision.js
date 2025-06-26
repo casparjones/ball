@@ -14,6 +14,19 @@ export default class CollisionEngine {
         this.vertices = this.generateVertices();
         this.edges = this.generateEdges();
         this.paddleEdges = this.generatePaddleEdges();
+        this.objects = new Map();
+    }
+
+    registerObject(handle, obj) {
+        this.objects.set(handle, obj);
+    }
+
+    unregisterObject(handle) {
+        this.objects.delete(handle);
+    }
+
+    getObject(handle) {
+        return this.objects.get(handle);
     }
 
     setRotation(angle) {
@@ -217,6 +230,40 @@ export default class CollisionEngine {
         }
         
         return false;
+    }
+
+    checkBallBallCollision(a, b) {
+        const dx = a.x - b.x;
+        const dy = a.y - b.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < a.radius + b.radius) {
+            return {
+                point: {
+                    x: (a.x + b.x) / 2,
+                    y: (a.y + b.y) / 2
+                },
+                normal: {
+                    x: dx / dist,
+                    y: dy / dist
+                },
+                penetration: a.radius + b.radius - dist
+            };
+        }
+        return null;
+    }
+
+    checkCollisionByHandle(ballHandle, targetHandle) {
+        const ball = this.getObject(ballHandle);
+        const target = this.getObject(targetHandle);
+        if (!ball || !target) return null;
+
+        if (targetHandle === 'board') {
+            return this.checkCollision(ball);
+        }
+        if (target.radius !== undefined) {
+            return this.checkBallBallCollision(ball, target);
+        }
+        return null;
     }
     
     constrainBall(ball) {

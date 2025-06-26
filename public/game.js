@@ -133,7 +133,7 @@ class BouncingBallGame {
     }
 
     checkOctagonCollision(ball) {
-        const collision = this.collisionEngine.checkCollision(ball);
+        const collision = this.collisionEngine.checkCollisionByHandle(ball.handle, 'board');
 
         if (collision) {
             const bounced = this.collisionEngine.resolveCollision(ball, collision, ball.friction);
