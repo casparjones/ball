@@ -6,6 +6,10 @@ Ein interaktives Physik-Spiel mit hüpfenden Bällen in einem rotierenden Oktago
 
 Dieses Projekt ist ein HTML5-Canvas-basiertes Spiel, das realistische Physik-Simulation mit visuell ansprechender Grafik kombiniert. Die Spieler können durch Klicken neue Bälle innerhalb eines rotierenden Oktagons erstellen, die dann mit Schwerkraft und Kollisionsdetektion interagieren.
 
+## GitHub Page
+
+Eine Live-Demo ist unter <https://yourusername.github.io/ball/> verfügbar.
+
 ## Features
 
 - **Interaktive Ball-Erstellung**: Klicken Sie innerhalb des Oktagons, um neue Bälle zu erstellen
