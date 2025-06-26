@@ -13,8 +13,12 @@ export default class Board extends CollisionObject {
         this.paddleRotation = 0;
         this.paddleLength = this.radius * 0.4;
         this.paddleWidth = 10;
+        // Position paddles flush with the octagon edge so balls can't slip
+        // between paddle and board. Previously the paddles were offset by
+        // 20 pixels which created a noticeable gap. Moving them outward
+        // aligns the outer edge of the paddle with the board radius.
         this.paddleDistance = Math.max(
-            this.radius - this.paddleLength / 2 - 20,
+            this.radius - this.paddleLength / 2,
             0
         );
         this.vertices = this.collisionEngine.vertices;
