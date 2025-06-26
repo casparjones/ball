@@ -51,3 +51,8 @@ export default class Board {
         ctx.restore();
     }
 }
+
+// Expose class globally for non-module environments
+if (typeof window !== 'undefined') {
+    window.Board = Board;
+}

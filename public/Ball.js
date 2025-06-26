@@ -15,3 +15,8 @@ export default class Ball {
         this.motion.updateBall(this);
     }
 }
+
+// Expose class globally for non-module environments
+if (typeof window !== 'undefined') {
+    window.Ball = Ball;
+}
