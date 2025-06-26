@@ -169,3 +169,8 @@ export default class CollisionEngine {
         return false;
     }
 }
+
+// Expose class globally for non-module environments
+if (typeof window !== 'undefined') {
+    window.CollisionEngine = CollisionEngine;
+}
