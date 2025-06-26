@@ -1,5 +1,8 @@
-export default class Board {
+import CollisionObject from './collisionObject.js';
+
+export default class Board extends CollisionObject {
     constructor(centerX, centerY, radius, sides, motionEngine, collisionEngine) {
+        super('board', collisionEngine);
         this.centerX = centerX;
         this.centerY = centerY;
         this.radius = radius;
@@ -19,7 +22,8 @@ export default class Board {
 
     update() {
         this.motion.updateRotation(this);
-        this.paddleRotation += this.motion.rotationSpeed;
+        // Keep paddles aligned with the board so they rotate at the same speed
+        this.paddleRotation = 0;
         this.collisionEngine.setRotation(this.rotation);
         this.collisionEngine.setPaddleRotation(this.paddleRotation);
     }

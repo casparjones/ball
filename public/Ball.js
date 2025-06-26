@@ -1,5 +1,8 @@
-export default class Ball {
+import CollisionObject from './collisionObject.js';
+
+export default class Ball extends CollisionObject {
     constructor(x, y, motionEngine, collisionEngine, options = {}) {
+        super(options.handle || `ball-${Date.now()}-${Math.random()}`, collisionEngine);
         this.x = x;
         this.y = y;
         this.vx = options.vx ?? 0;
