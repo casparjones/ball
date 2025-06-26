@@ -30,6 +30,9 @@ class BouncingBallGame {
         );
 
         this.balls = [];
+
+        // Minimum velocity magnitude required to play a bounce sound
+        this.soundThreshold = 1;
         this.createBall();
 
         this.initAudio();
@@ -91,7 +94,7 @@ class BouncingBallGame {
         }
     }
 
-    async playBounceSound() {
+    async playBounceSound(intensity = 1) {
         if (!this.audioInitialized) {
             this.enableAudio();
         }
@@ -113,7 +116,9 @@ class BouncingBallGame {
             oscillator.frequency.setValueAtTime(800, this.audioContext.currentTime);
             oscillator.frequency.exponentialRampToValueAtTime(200, this.audioContext.currentTime + 0.1);
 
-            gainNode.gain.setValueAtTime(0.2, this.audioContext.currentTime);
+            // Scale volume by bounce intensity (clamped between 0 and 1)
+            const volume = Math.min(intensity, 1) * 0.2;
+            gainNode.gain.setValueAtTime(volume, this.audioContext.currentTime);
             gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + 0.1);
 
             oscillator.start(this.audioContext.currentTime);
@@ -138,13 +143,19 @@ class BouncingBallGame {
         if (collision) {
             const bounced = this.collisionEngine.resolveCollision(ball, collision, ball.friction);
             if (bounced) {
-                this.playBounceSound();
+                const speed = Math.hypot(ball.vx, ball.vy);
+                if (speed > this.soundThreshold) {
+                    this.playBounceSound(Math.min(speed / 10, 1));
+                }
             }
         }
 
         const constrained = this.collisionEngine.constrainBall(ball);
         if (constrained) {
-            this.playBounceSound();
+            const speed = Math.hypot(ball.vx, ball.vy);
+            if (speed > this.soundThreshold) {
+                this.playBounceSound(Math.min(speed / 10, 1));
+            }
         }
     }
 
