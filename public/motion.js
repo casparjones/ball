@@ -16,3 +16,8 @@ export default class MotionEngine {
         }
     }
 }
+
+// Expose class globally for non-module environments
+if (typeof window !== 'undefined') {
+    window.MotionEngine = MotionEngine;
+}
