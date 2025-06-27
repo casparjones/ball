@@ -16,22 +16,27 @@ export default class RandomNumberGame {
     }
 
     createObstacles() {
-        const rows = 5;
-        const cols = 10;
+        // more and closer obstacles arranged in a staggered grid so
+        // that falling balls are guaranteed to hit one on each row
+        const rows = 7;
+        const cols = 12;
         const spacingX = this.canvas.width / (cols + 1);
-        const spacingY = (this.canvas.height - this.slotHeight - 200) / (rows + 1);
+        const spacingY = (this.canvas.height - this.slotHeight - 100) / (rows + 1);
         for (let r = 0; r < rows; r++) {
+            const offset = (r % 2) * spacingX / 2;
             for (let c = 0; c < cols; c++) {
-                const x = spacingX * (c + 1);
-                const y = 100 + spacingY * (r + 1);
+                const x = spacingX * (c + 1) + offset;
+                const y = 50 + spacingY * (r + 1);
                 this.obstacles.push({ x, y, radius: 10 });
             }
         }
     }
 
     spawnBall() {
+        const spacingX = this.canvas.width / (12 + 1);
+        const margin = spacingX / 2;
         this.ball = {
-            x: Math.random() * this.canvas.width,
+            x: margin + Math.random() * (this.canvas.width - margin * 2),
             y: -20,
             vx: (Math.random() - 0.5) * 2,
             vy: 0,
