@@ -39,6 +39,10 @@ Eine Live-Demo ist unter <https://casparjones.github.io/ball/> verfügbar.
 - Ball fällt durch Hindernisse in eines von 25 Zahlenfeldern
 - Nach Anzeige der Zahl wird nach kurzer Pause ein neuer Ball erzeugt
 
+#### LottoGame (`lotto.js`)
+- Simuliert eine Lotto-Ziehung mit 49 nummerierten Kugeln
+- Zieht nacheinander sechs Kugeln und zeigt sie am Rand an
+
 #### CollisionEngine (`collision.js`)
 - Spezialisierte Physik-Engine für Polygon-Kollisionen
 - Implementiert SAT (Separating Axis Theorem) für präzise Kollisionsdetektion
