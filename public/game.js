@@ -33,6 +33,9 @@ class BouncingBallGame {
 
         // Minimum velocity magnitude required to play a bounce sound
         this.soundThreshold = 1;
+        // Velocity magnitude above which collisions are checked along the
+        // movement path to avoid tunneling
+        this.continuousCollisionThreshold = 12;
         this.createBall();
 
         this.initAudio();
@@ -131,6 +134,23 @@ class BouncingBallGame {
     updatePhysics() {
         for (const ball of this.balls) {
             ball.update();
+            const speed = Math.hypot(ball.vx, ball.vy);
+            if (speed > this.continuousCollisionThreshold) {
+                const col = this.collisionEngine.checkContinuousCollision(
+                    ball,
+                    ball.prevX,
+                    ball.prevY
+                );
+                if (col) {
+                    const bounced = this.collisionEngine.resolveCollision(ball, col, ball.friction);
+                    if (bounced) {
+                        const after = Math.hypot(ball.vx, ball.vy);
+                        if (after > this.soundThreshold) {
+                            this.playBounceSound(Math.min(after / 10, 1));
+                        }
+                    }
+                }
+            }
             this.checkOctagonCollision(ball);
         }
 

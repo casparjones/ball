@@ -12,9 +12,13 @@ export default class Ball extends CollisionObject {
         this.motion = motionEngine;
         this.collisionEngine = collisionEngine;
         this.friction = options.friction ?? 0.9;
+        this.prevX = x;
+        this.prevY = y;
     }
 
     update() {
+        this.prevX = this.x;
+        this.prevY = this.y;
         this.motion.updateBall(this);
     }
 }
