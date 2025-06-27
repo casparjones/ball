@@ -17,3 +17,23 @@ canvas {
     border: 2px solid #333;
     background-color: #000;
 }
+
+#statsButton {
+    position: absolute;
+    top: 10px;
+    right: 120px;
+    z-index: 10;
+}
+
+#statsPopup {
+    position: absolute;
+    top: 40px;
+    right: 10px;
+    background: rgba(0, 0, 0, 0.8);
+    color: #fff;
+    padding: 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    display: none;
+    min-width: 120px;
+}
