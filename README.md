@@ -30,10 +30,14 @@ Eine Live-Demo ist unter <https://casparjones.github.io/ball/> verfügbar.
 ### Hauptkomponenten
 
 #### BouncingBallGame (`game.js`)
-- Hauptspiel-Controller
+- Hauptspiel-Controller für den Karussell-Modus
 - Verwaltet Canvas, Animation und Benutzereingaben
 - Handhabt Audio-Initialisierung und Wiedergabe
 - Koordiniert Physik-Updates und Rendering
+
+#### RandomNumberGame (`randomNumber.js`)
+- Ball fällt durch Hindernisse in eines von 25 Zahlenfeldern
+- Nach Anzeige der Zahl wird nach kurzer Pause ein neuer Ball erzeugt
 
 #### CollisionEngine (`collision.js`)
 - Spezialisierte Physik-Engine für Polygon-Kollisionen

@@ -13,9 +13,13 @@ $canvasHeight = 800;
 </head>
 <body>
     <div id="gameContainer">
+        <select id="modeSelect" style="display:block;margin:10px auto;">
+            <option value="carousel">Carousel</option>
+            <option value="random">Random Number</option>
+        </select>
         <canvas id="gameCanvas" width="<?php echo $canvasWidth; ?>" height="<?php echo $canvasHeight; ?>"></canvas>
     </div>
 
-    <script type="module" src="game.js"></script>
+    <script type="module" src="main.js"></script>
 </body>
 </html>
