@@ -188,8 +188,10 @@ export default class RandomNumberGame {
     updateStatsPopup() {
         if (!this.showStats || !this.statsPopup) return;
         let html = '<strong>Statistik</strong><br>';
-        for (let i = 0; i < 25; i++) {
-            html += `${i + 1}: ${this.statsData.counts[i]}<br>`;
+        const arr = this.statsData.counts.map((c, i) => ({ number: i + 1, count: c }));
+        arr.sort((a, b) => b.count - a.count);
+        for (const item of arr) {
+            html += `${item.number}: ${item.count}<br>`;
         }
         html += '<button id="resetStatsBtn" style="margin-top:5px;">Reset</button>';
         this.statsPopup.innerHTML = html;
