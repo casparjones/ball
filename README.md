@@ -22,7 +22,6 @@ Eine Live-Demo ist unter <https://casparjones.github.io/ball/> verfügbar.
 ## Technische Details
 
 ### Architektur
-- **PHP Backend**: Grundlegende Serverlogik für die HTML-Generierung
 - **Vanilla JavaScript**: Keine externen Bibliotheken erforderlich
 - **HTML5 Canvas**: Für 2D-Rendering und Animation
 - **Web Audio API**: Für dynamische Sound-Effekte
@@ -57,17 +56,20 @@ Eine Live-Demo ist unter <https://casparjones.github.io/ball/> verfügbar.
 
 ## Installation
 
-1. Stellen Sie sicher, dass PHP auf Ihrem Server installiert ist
-2. Klonen Sie das Repository:
+1. Klonen Sie das Repository:
    ```bash
    git clone <repository-url>
    cd ball
    ```
-3. Starten Sie einen lokalen Server (z.B. mit PHP):
+2. Starten Sie einen lokalen Server (z.B. mit `npx serve` oder `python3 -m http.server`):
    ```bash
-   php -S localhost:8000 -t public
+   npx serve -l 8000 .
    ```
-4. Öffnen Sie `http://localhost:8000` in Ihrem Browser
+   oder
+   ```bash
+   python3 -m http.server 8000
+   ```
+3. Öffnen Sie `http://localhost:8000` in Ihrem Browser
 
 ## Verwendung
 
@@ -87,7 +89,7 @@ Eine Live-Demo ist unter <https://casparjones.github.io/ball/> verfügbar.
 
 ```
 public/
-├── index.php          # Haupt-HTML-Datei (PHP-Template)
+├── index.html -> ../index.html  # Symlink auf Hauptdatei
 ├── game.js            # Hauptspiel-Logik und Animation
 ├── collision.js       # Kollisions-Engine und Physik
 └── style.css         # Basis-Styling und Layout
