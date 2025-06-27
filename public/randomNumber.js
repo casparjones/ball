@@ -8,7 +8,8 @@ export default class RandomNumberGame {
         this.ball = null;
         this.obstacles = [];
         this.result = null;
-        this.stats = Array(25).fill(0);
+        this.storageKey = 'randomNumberStats';
+        this.statsData = this.loadStats();
         this.showStats = false;
         this.statsPopup = document.getElementById('statsPopup');
         this.slotHeight = 40;
@@ -16,6 +17,26 @@ export default class RandomNumberGame {
         this.spawnBall();
         this.animate = this.animate.bind(this);
         this.animationId = requestAnimationFrame(this.animate);
+    }
+
+    loadStats() {
+        try {
+            const data = JSON.parse(localStorage.getItem(this.storageKey));
+            if (data && Array.isArray(data.counts) && data.counts.length === 25) {
+                return { counts: data.counts.slice() };
+            }
+        } catch (e) {}
+        return { counts: Array(25).fill(0) };
+    }
+
+    saveStats() {
+        localStorage.setItem(this.storageKey, JSON.stringify(this.statsData));
+    }
+
+    resetStats() {
+        this.statsData.counts = Array(25).fill(0);
+        localStorage.removeItem(this.storageKey);
+        this.updateStatsPopup();
     }
 
     createObstacles() {
@@ -80,12 +101,15 @@ export default class RandomNumberGame {
         if (this.ball.y + this.ball.radius >= this.canvas.height - this.slotHeight) {
             const slotWidth = this.canvas.width / 25;
             const index = Math.floor(this.ball.x / slotWidth) + 1;
-            this.result = index;
-            this.stats[index - 1] += 1;
+            if (this.result === null) {
+                this.result = index;
+                this.statsData.counts[index - 1] += 1;
+                this.saveStats();
+                setTimeout(() => this.spawnBall(), 3000);
+            }
             this.ball.vx = 0;
             this.ball.vy = 0;
             this.ball.y = this.canvas.height - this.slotHeight - this.ball.radius;
-            setTimeout(() => this.spawnBall(), 3000);
         }
         // obstacles collision
         for (const o of this.obstacles) {
@@ -163,17 +187,16 @@ export default class RandomNumberGame {
 
     updateStatsPopup() {
         if (!this.showStats || !this.statsPopup) return;
-        const arr = this.stats.map((c, i) => ({ number: i + 1, count: c }));
-        arr.sort((a, b) => b.count - a.count);
-        const top = arr.filter(a => a.count > 0).slice(0, 5);
-        let html = '<strong>Top Zahlen</strong><br>';
-        for (const t of top) {
-            html += `${t.number}: ${t.count}<br>`;
+        let html = '<strong>Statistik</strong><br>';
+        for (let i = 0; i < 25; i++) {
+            html += `${i + 1}: ${this.statsData.counts[i]}<br>`;
         }
-        html += '<hr>';
-        html += `pos: ${Math.round(this.ball.x)},${Math.round(this.ball.y)}<br>`;
-        html += `vel: ${this.ball.vx.toFixed(2)},${this.ball.vy.toFixed(2)}`;
+        html += '<button id="resetStatsBtn" style="margin-top:5px;">Reset</button>';
         this.statsPopup.innerHTML = html;
+        const btn = this.statsPopup.querySelector('#resetStatsBtn');
+        if (btn) {
+            btn.onclick = () => this.resetStats();
+        }
     }
 
     toggleStats() {
