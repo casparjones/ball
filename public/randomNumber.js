@@ -44,21 +44,19 @@ export default class RandomNumberGame {
         // that falling balls are guaranteed to hit one on each row
         const rows = 7;
         const cols = 12;
-        const spacingX = this.canvas.width / (cols + 1);
-        const spacingY = (this.canvas.height - this.slotHeight - 100) / (rows + 1);
         const slotWidth = this.canvas.width / 25;
+        const spacingX = (this.canvas.width - slotWidth) / (cols - 0.5);
+        const spacingY = (this.canvas.height - this.slotHeight - 100) / (rows + 1);
         const postY = this.canvas.height - this.slotHeight - 10;
         const postHeight = 20; // height for visual posts
 
         for (let r = 0; r < rows; r++) {
-            const offset = (r % 2) * spacingX / 2;
             const y = 50 + spacingY * (r + 1);
+            const offset = (r % 2) * spacingX / 2;
             for (let c = 0; c < cols; c++) {
-                const x = spacingX * (c + 1) + offset;
+                const x = slotWidth / 2 + offset + spacingX * c;
                 this.obstacles.push({ x, y, radius: 10, type: 'peg' });
             }
-            // extra obstacle on the far left for every row
-            this.obstacles.push({ x: slotWidth / 2, y, radius: 10, type: 'peg' });
         }
 
         // vertical posts between the number slots
