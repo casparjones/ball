@@ -3,9 +3,9 @@ import CollisionEngine from './collision.js';
 import Ball from './Ball.js';
 import Board from './board.js';
 
-class BouncingBallGame {
-    constructor() {
-        this.canvas = document.getElementById('gameCanvas');
+export default class BouncingBallGame {
+    constructor(canvas = document.getElementById('gameCanvas')) {
+        this.canvas = canvas;
         this.ctx = this.canvas.getContext('2d');
         this.centerX = this.canvas.width / 2;
         this.centerY = this.canvas.height / 2;
@@ -64,7 +64,7 @@ class BouncingBallGame {
     }
 
     setupMouseEvents() {
-        this.canvas.addEventListener('click', (event) => {
+        this.boundClick = (event) => {
             if (!this.audioInitialized) {
                 this.enableAudio();
             }
@@ -76,7 +76,8 @@ class BouncingBallGame {
             if (this.collisionEngine.isPointInsidePolygon(x, y)) {
                 this.createBall(x, y);
             }
-        });
+        };
+        this.canvas.addEventListener('click', this.boundClick);
 
         this.canvas.style.cursor = 'crosshair';
     }
@@ -218,10 +219,14 @@ class BouncingBallGame {
     animate() {
         this.updatePhysics();
         this.draw();
-        requestAnimationFrame(() => this.animate());
+        this.animationId = requestAnimationFrame(() => this.animate());
+    }
+
+    destroy() {
+        cancelAnimationFrame(this.animationId);
+        if (this.boundClick) {
+            this.canvas.removeEventListener('click', this.boundClick);
+        }
+        this.balls = [];
     }
 }
-
-window.addEventListener('load', () => {
-    new BouncingBallGame();
-});
