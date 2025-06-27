@@ -22,40 +22,36 @@ export default class RandomNumberGame {
         const cols = 12;
         const spacingX = this.canvas.width / (cols + 1);
         const spacingY = (this.canvas.height - this.slotHeight - 100) / (rows + 1);
+        const slotWidth = this.canvas.width / 25;
+        const postY = this.canvas.height - this.slotHeight - 10;
+        const postHeight = 20; // height for visual posts
+
         for (let r = 0; r < rows; r++) {
             const offset = (r % 2) * spacingX / 2;
+            const y = 50 + spacingY * (r + 1);
             for (let c = 0; c < cols; c++) {
                 const x = spacingX * (c + 1) + offset;
-                const y = 50 + spacingY * (r + 1);
-                this.obstacles.push({ x, y, radius: 10 });
+                this.obstacles.push({ x, y, radius: 10, type: 'peg' });
             }
+            // extra obstacle on the far left for every row
+            this.obstacles.push({ x: slotWidth / 2, y, radius: 10, type: 'peg' });
         }
-        // extra obstacle above the first slot so the ball can bounce on the far left
-        const slotWidth = this.canvas.width / 25;
-        const extraY = 50 + spacingY;
-        this.obstacles.push({ x: slotWidth / 2, y: extraY, radius: 10 });
 
-        // small posts forming boxes above each number
-        const postY = this.canvas.height - this.slotHeight - 10;
-        for (let i = 0; i < 25; i++) {
-            const leftX = i * slotWidth + 4;
-            const rightX = (i + 1) * slotWidth - 4;
-            this.obstacles.push({ x: leftX, y: postY, radius: 5 });
-            this.obstacles.push({ x: rightX, y: postY, radius: 5 });
+        // vertical posts between the number slots
+        for (let i = 0; i <= 25; i++) {
+            const x = i * slotWidth;
+            this.obstacles.push({ x, y: postY, radius: 5, height: postHeight, type: 'post' });
         }
     }
 
     spawnBall() {
         const spacingX = this.canvas.width / (12 + 1);
         const margin = spacingX / 2;
-        const speed = 3;
-        const angle = Math.PI / 6; // 30 degrees from vertical
-        const dir = Math.random() < 0.5 ? -1 : 1;
         this.ball = {
             x: margin + Math.random() * (this.canvas.width - margin * 2),
             y: -20,
-            vx: dir * speed * Math.sin(angle),
-            vy: speed * Math.cos(angle),
+            vx: (Math.random() - 0.5) * 2,
+            vy: 0,
             radius: 10,
             color: '#ff6b6b'
         };
@@ -93,18 +89,16 @@ export default class RandomNumberGame {
             const dy = this.ball.y - o.y;
             const dist = Math.hypot(dx, dy);
             if (dist < this.ball.radius + o.radius) {
-                const penetration = this.ball.radius + o.radius - dist;
                 const nx = dx / dist;
                 const ny = dy / dist;
+                const penetration = this.ball.radius + o.radius - dist;
                 this.ball.x += nx * penetration;
                 this.ball.y += ny * penetration;
-
-                // after hitting a peg, deflect 30 degrees left or right
-                const speed = Math.hypot(this.ball.vx, this.ball.vy) || 1;
-                const angle = Math.PI / 6;
-                const dir = Math.random() < 0.5 ? -1 : 1;
-                this.ball.vx = dir * speed * Math.sin(angle);
-                this.ball.vy = Math.abs(speed * Math.cos(angle));
+                const dot = this.ball.vx * nx + this.ball.vy * ny;
+                this.ball.vx -= 2 * dot * nx;
+                this.ball.vy -= 2 * dot * ny;
+                this.ball.vx *= 0.9;
+                this.ball.vy *= 0.9;
             }
         }
     }
@@ -135,10 +129,19 @@ export default class RandomNumberGame {
         }
         // obstacles
         this.ctx.fillStyle = '#999';
+        this.ctx.strokeStyle = '#999';
         for (const o of this.obstacles) {
-            this.ctx.beginPath();
-            this.ctx.arc(o.x, o.y, o.radius, 0, Math.PI * 2);
-            this.ctx.fill();
+            if (o.type === 'post') {
+                this.ctx.lineWidth = 4;
+                this.ctx.beginPath();
+                this.ctx.moveTo(o.x, o.y);
+                this.ctx.lineTo(o.x, o.y - o.height);
+                this.ctx.stroke();
+            } else {
+                this.ctx.beginPath();
+                this.ctx.arc(o.x, o.y, o.radius, 0, Math.PI * 2);
+                this.ctx.fill();
+            }
         }
         // ball
         if (this.ball) {
