@@ -18,6 +18,7 @@ $canvasHeight = 800;
         <select id="modeSelect" style="display:block;margin:10px auto;">
             <option value="carousel">Carousel</option>
             <option value="random">Random Number</option>
+            <option value="lotto">Lotto Simulation</option>
         </select>
         <canvas id="gameCanvas" width="<?php echo $canvasWidth; ?>" height="<?php echo $canvasHeight; ?>"></canvas>
     </div>

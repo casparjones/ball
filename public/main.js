@@ -1,5 +1,6 @@
 import BouncingBallGame from './game.js';
 import RandomNumberGame from './randomNumber.js';
+import LottoGame from './lotto.js';
 
 const modeSelect = document.getElementById('modeSelect');
 const canvas = document.getElementById('gameCanvas');
@@ -23,6 +24,10 @@ function start(mode) {
     if (mode === 'random') {
         currentGame = new RandomNumberGame(canvas);
         statsButton.style.display = 'block';
+        statsPopup.style.display = 'none';
+    } else if (mode === 'lotto') {
+        currentGame = new LottoGame(canvas);
+        statsButton.style.display = 'none';
         statsPopup.style.display = 'none';
     } else {
         currentGame = new BouncingBallGame(canvas);
