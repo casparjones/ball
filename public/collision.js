@@ -213,6 +213,30 @@ export default class CollisionEngine {
         
         return collision;
     }
+
+    checkContinuousCollision(ball, prevX, prevY) {
+        const nextX = ball.x;
+        const nextY = ball.y;
+        const dx = nextX - prevX;
+        const dy = nextY - prevY;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        const steps = Math.max(Math.ceil(distance / (ball.radius || 1)), 1);
+        const stepX = dx / steps;
+        const stepY = dy / steps;
+        const temp = { x: prevX, y: prevY, vx: ball.vx, vy: ball.vy, radius: ball.radius };
+
+        for (let i = 1; i <= steps; i++) {
+            temp.x += stepX;
+            temp.y += stepY;
+            const col = this.checkCollision(temp);
+            if (col) {
+                ball.x = temp.x;
+                ball.y = temp.y;
+                return col;
+            }
+        }
+        return null;
+    }
     
     resolveCollision(ball, collision, friction = 0.9) {
         if (!collision) return false;
