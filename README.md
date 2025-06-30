@@ -44,17 +44,12 @@ Eine Live-Demo ist unter <https://casparjones.github.io/ball/> verfügbar.
 - Simuliert eine Lotto-Ziehung mit 49 nummerierten Kugeln
 - Zieht nacheinander sechs Kugeln und zeigt sie am Rand an
 
-#### CollisionEngine (`collision.js`)
-- Spezialisierte Physik-Engine für Polygon-Kollisionen
-- Implementiert SAT (Separating Axis Theorem) für präzise Kollisionsdetektion
-- Behandelt sowohl Kanten- als auch Eckenkollisionen
-- Verwaltet Ball-Beschränkungen innerhalb des Oktagons
 
 ### Physik-Simulation
 - **Schwerkraft**: 0.4 Pixel/Frame²
 - **Reibung**: 90% Geschwindigkeitserhaltung bei Kollisionen
 - **Elastische Kollisionen**: Realistische Reflexion basierend auf Oberflächennormalen
-- **Kontinuierliche Rotation**: 0.01 Radiant/Frame
+- **Kontinuierliche Rotation**: 0.01 Radian/Frame
 
 ## Installation
 
@@ -93,7 +88,6 @@ Eine Live-Demo ist unter <https://casparjones.github.io/ball/> verfügbar.
 css/                # Styling und Layout
 js/                 # Sämtliche Spiel- und Hilfs-Skripte
 img/                # Grafiken und Screenshots
-php/                # PHP-Hilfsdateien
 index.html          # Einstiegspunkt der Anwendung
 ```
 
