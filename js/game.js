@@ -1,4 +1,5 @@
-import { createEngine, updateEngine, createBall, createPolygon, addBody, rotate } from './physics.js';
+import { createEngine, updateEngine, createPolygon, addBody, rotate, Matter } from './physics.js';
+import Ball from './ball.js';
 
 export default class BouncingBallGame {
     constructor(canvas = document.getElementById('gameCanvas')) {
@@ -7,13 +8,31 @@ export default class BouncingBallGame {
         this.centerX = this.canvas.width / 2;
         this.centerY = this.canvas.height / 2;
         this.radius = 360;
-        this.engine = createEngine(0.4);
+        this.engine = createEngine(0.6);
         this.board = createPolygon(this.centerX, this.centerY, 8, this.radius, { isStatic: true });
         addBody(this.engine, this.board);
         this.rotationSpeed = 0.01;
+        this.boardAngle = 0;
         this.balls = [];
+        this.createObstacles();
+        this.addBall(this.centerX, this.centerY);
         this.setupMouse();
         this.animate();
+    }
+
+    createObstacles() {
+        this.obstacles = [];
+        const distance = this.radius - 20;
+        for (let i = 0; i < 4; i++) {
+            const angle = i * Math.PI / 2;
+            const x = this.centerX + Math.cos(angle) * distance;
+            const y = this.centerY + Math.sin(angle) * distance;
+            const bar = Matter.Bodies.rectangle(x, y, 80, 10, { isStatic: true });
+            Matter.Body.rotate(bar, angle);
+            bar.offsetAngle = angle;
+            addBody(this.engine, bar);
+            this.obstacles.push(bar);
+        }
     }
 
     setupMouse() {
@@ -26,15 +45,35 @@ export default class BouncingBallGame {
     }
 
     addBall(x, y) {
+        if (!this.isInside(x, y)) {
+            x = this.centerX;
+            y = this.centerY;
+        }
         const radius = 10 + Math.random() * 6;
-        const ball = createBall(x, y, radius, { restitution: 0.9 });
-        ball.color = '#ff6b6b';
-        addBody(this.engine, ball);
+        const ball = new Ball(this.engine, x, y, radius);
         this.balls.push(ball);
     }
 
+    isInside(x, y) {
+        if (this.board.vertices && this.board.vertices.length && Matter.Vertices) {
+            return Matter.Vertices.contains(this.board.vertices, { x, y });
+        }
+        const dx = x - this.centerX;
+        const dy = y - this.centerY;
+        return Math.sqrt(dx * dx + dy * dy) <= this.radius - 20;
+    }
+
     update() {
+        this.boardAngle += this.rotationSpeed;
         rotate(this.board, this.rotationSpeed);
+        const distance = this.radius - 20;
+        for (const o of this.obstacles) {
+            o.offsetAngle += this.rotationSpeed;
+            const x = this.centerX + Math.cos(o.offsetAngle) * distance;
+            const y = this.centerY + Math.sin(o.offsetAngle) * distance;
+            Matter.Body.setPosition(o, { x, y });
+            Matter.Body.setAngle(o, o.offsetAngle);
+        }
         updateEngine(this.engine);
     }
 
@@ -54,15 +93,13 @@ export default class BouncingBallGame {
     }
 
     drawBall(ball) {
-        this.ctx.beginPath();
-        this.ctx.arc(ball.position.x, ball.position.y, ball.circleRadius || ball.radius, 0, Math.PI * 2);
-        this.ctx.fillStyle = ball.color || '#fff';
-        this.ctx.fill();
+        ball.draw(this.ctx);
     }
 
     draw() {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         this.drawBody(this.board);
+        for (const o of this.obstacles) this.drawBody(o);
         for (const b of this.balls) {
             this.drawBall(b);
         }

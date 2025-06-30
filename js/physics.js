@@ -28,3 +28,15 @@ export function addBody(engine, body) {
 export function rotate(body, angle) {
     MatterRef.Body.rotate(body, angle);
 }
+
+export function setPosition(body, pos) {
+    MatterRef.Body.setPosition(body, pos);
+}
+
+export function setAngle(body, angle) {
+    MatterRef.Body.setAngle(body, angle);
+}
+
+export function setVelocity(body, vel) {
+    MatterRef.Body.setVelocity(body, vel);
+}
