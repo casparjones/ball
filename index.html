@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Realistic Ball Bump</title>
-    <link rel="stylesheet" href="public/style.css">
+    <link rel="stylesheet" href="css/style.css">
     <style>
         #githubBadge {
             position: absolute;
@@ -21,6 +21,7 @@
 </head>
 <body>
     <a id="githubBadge" href="https://github.com/casparjones/ball">clone on github</a>
+    <span id="version" style="position:absolute;top:10px;right:90px;color:#fff;font-size:14px;"></span>
     <button id="statsButton" style="position:absolute;top:10px;right:120px;z-index:10;">Show Statistik</button>
     <div id="statsPopup" style="display:none;position:absolute;top:40px;right:10px;background:rgba(0,0,0,0.8);color:#fff;padding:10px;border-radius:4px;font-size:12px;"></div>
     <div id="gameContainer">
@@ -32,6 +33,16 @@
         </select>
         <canvas id="gameCanvas" width="800" height="800"></canvas>
     </div>
-    <script type="module" src="public/main.js"></script>
+    <script type="module" src="js/main.js"></script>
+    <script>
+        const d = new Date();
+        const pad = n => n.toString().padStart(2, '0');
+        const version = d.getFullYear().toString() +
+            pad(d.getMonth() + 1) +
+            pad(d.getDate()) +
+            pad(d.getHours()) +
+            pad(d.getMinutes());
+        document.getElementById('version').textContent = version;
+    </script>
 </body>
 </html>
