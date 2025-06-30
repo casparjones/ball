@@ -24,7 +24,7 @@ Eine Live-Demo ist unter <https://casparjones.github.io/ball/> verfügbar.
 ## Technische Details
 
 ### Architektur
-- **Vanilla JavaScript**: Keine externen Bibliotheken erforderlich
+- **Matter.js**: [liabru/matter-js](https://github.com/liabru/matter-js) für die Physik-Simulation
 - **HTML5 Canvas**: Für 2D-Rendering und Animation
 - **Web Audio API**: Für dynamische Sound-Effekte
 
@@ -121,7 +121,7 @@ vy: Math.random() * 2,                    // Vertikale Geschwindigkeit
 
 ## Entwicklung
 
-Das Projekt verwendet Vanilla JavaScript für maximale Kompatibilität und Performance. Die Physik-Engine ist speziell für Polygon-Kollisionen optimiert und kann leicht für andere Formen angepasst werden.
+Das Projekt basiert auf Vanilla JavaScript und nutzt für die Physik die Bibliothek [Matter.js](https://github.com/liabru/matter-js). Dadurch lassen sich realistische Kollisionen effizient simulieren.
 
 ## Lizenz
 
