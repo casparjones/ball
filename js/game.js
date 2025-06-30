@@ -1,7 +1,4 @@
-import MotionEngine from './motion.js';
-import CollisionEngine from './collision.js';
-import Ball from './Ball.js';
-import Board from './board.js';
+import { createEngine, updateEngine, createBall, createPolygon, addBody, rotate } from './physics.js';
 
 export default class BouncingBallGame {
     constructor(canvas = document.getElementById('gameCanvas')) {
@@ -9,224 +6,71 @@ export default class BouncingBallGame {
         this.ctx = this.canvas.getContext('2d');
         this.centerX = this.canvas.width / 2;
         this.centerY = this.canvas.height / 2;
-        this.octagonRadius = 360;
-        this.octagonSides = 8;
-
-        this.motionEngine = new MotionEngine();
-        this.collisionEngine = new CollisionEngine(
-            this.centerX,
-            this.centerY,
-            this.octagonRadius,
-            this.octagonSides
-        );
-
-        this.board = new Board(
-            this.centerX,
-            this.centerY,
-            this.octagonRadius,
-            this.octagonSides,
-            this.motionEngine,
-            this.collisionEngine
-        );
-
+        this.radius = 360;
+        this.engine = createEngine(0.4);
+        this.board = createPolygon(this.centerX, this.centerY, 8, this.radius, { isStatic: true });
+        addBody(this.engine, this.board);
+        this.rotationSpeed = 0.01;
         this.balls = [];
-
-        // Minimum velocity magnitude required to play a bounce sound
-        this.soundThreshold = 1;
-        // Velocity magnitude above which collisions are checked along the
-        // movement path to avoid tunneling
-        this.continuousCollisionThreshold = 12;
-        this.createBall();
-
-        this.initAudio();
-        this.setupMouseEvents();
+        this.setupMouse();
         this.animate();
     }
 
-    createBall(x = null, y = null) {
-        const colors = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#feca57', '#ff9ff3', '#54a0ff', '#5f27cd'];
-
-        const ball = new Ball(
-            x || this.centerX + (Math.random() - 0.5) * 200,
-            y || this.centerY - 100 - Math.random() * 150,
-            this.motionEngine,
-            this.collisionEngine,
-            {
-                vx: (Math.random() - 0.5) * 6,
-                vy: Math.random() * 2,
-                radius: 10 + Math.random() * 6,
-                color: colors[Math.floor(Math.random() * colors.length)]
-            }
-        );
-
-        this.balls.push(ball);
-        return ball;
-    }
-
-    setupMouseEvents() {
-        this.boundClick = (event) => {
-            if (!this.audioInitialized) {
-                this.enableAudio();
-            }
-
+    setupMouse() {
+        this.canvas.addEventListener('click', (e) => {
             const rect = this.canvas.getBoundingClientRect();
-            const x = event.clientX - rect.left;
-            const y = event.clientY - rect.top;
-
-            if (this.collisionEngine.isPointInsidePolygon(x, y)) {
-                this.createBall(x, y);
-            }
-        };
-        this.canvas.addEventListener('click', this.boundClick);
-
-        this.canvas.style.cursor = 'crosshair';
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            this.addBall(x, y);
+        });
     }
 
-    initAudio() {
-        this.audioInitialized = false;
-        this.audioContext = null;
+    addBall(x, y) {
+        const radius = 10 + Math.random() * 6;
+        const ball = createBall(x, y, radius, { restitution: 0.9 });
+        ball.color = '#ff6b6b';
+        addBody(this.engine, ball);
+        this.balls.push(ball);
     }
 
-    enableAudio() {
-        if (this.audioInitialized) return;
-
-        try {
-            this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            this.audioInitialized = true;
-        } catch (e) {
-            console.log('Web Audio API not supported');
-        }
+    update() {
+        rotate(this.board, this.rotationSpeed);
+        updateEngine(this.engine);
     }
 
-    async playBounceSound(intensity = 1) {
-        if (!this.audioInitialized) {
-            this.enableAudio();
-        }
-
-        if (!this.audioContext) return;
-
-        try {
-            if (this.audioContext.state === 'suspended') {
-                await this.audioContext.resume();
+    drawBody(body) {
+        const verts = body.vertices || [];
+        if (verts.length) {
+            this.ctx.beginPath();
+            this.ctx.moveTo(verts[0].x, verts[0].y);
+            for (let i = 1; i < verts.length; i++) {
+                this.ctx.lineTo(verts[i].x, verts[i].y);
             }
-
-            const oscillator = this.audioContext.createOscillator();
-            const gainNode = this.audioContext.createGain();
-
-            oscillator.connect(gainNode);
-            gainNode.connect(this.audioContext.destination);
-
-            oscillator.type = 'sine';
-            oscillator.frequency.setValueAtTime(800, this.audioContext.currentTime);
-            oscillator.frequency.exponentialRampToValueAtTime(200, this.audioContext.currentTime + 0.1);
-
-            // Scale volume by bounce intensity (clamped between 0 and 1)
-            const volume = Math.min(intensity, 1) * 0.2;
-            gainNode.gain.setValueAtTime(volume, this.audioContext.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + 0.1);
-
-            oscillator.start(this.audioContext.currentTime);
-            oscillator.stop(this.audioContext.currentTime + 0.1);
-        } catch (e) {
-            // Silently handle audio errors
-        }
-    }
-
-    updatePhysics() {
-        for (const ball of this.balls) {
-            ball.update();
-            const speed = Math.hypot(ball.vx, ball.vy);
-            if (speed > this.continuousCollisionThreshold) {
-                const col = this.collisionEngine.checkContinuousCollision(
-                    ball,
-                    ball.prevX,
-                    ball.prevY
-                );
-                if (col) {
-                    const bounced = this.collisionEngine.resolveCollision(ball, col, ball.friction);
-                    if (bounced) {
-                        const after = Math.hypot(ball.vx, ball.vy);
-                        if (after > this.soundThreshold) {
-                            this.playBounceSound(Math.min(after / 10, 1));
-                        }
-                    }
-                }
-            }
-            this.checkOctagonCollision(ball);
-        }
-
-        this.board.update();
-    }
-
-    checkOctagonCollision(ball) {
-        const collision = this.collisionEngine.checkCollisionByHandle(ball.handle, 'board');
-
-        if (collision) {
-            const bounced = this.collisionEngine.resolveCollision(ball, collision, ball.friction);
-            if (bounced) {
-                const speed = Math.hypot(ball.vx, ball.vy);
-                if (speed > this.soundThreshold) {
-                    this.playBounceSound(Math.min(speed / 10, 1));
-                }
-            }
-        }
-
-        const constrained = this.collisionEngine.constrainBall(ball);
-        if (constrained) {
-            const speed = Math.hypot(ball.vx, ball.vy);
-            if (speed > this.soundThreshold) {
-                this.playBounceSound(Math.min(speed / 10, 1));
-            }
+            this.ctx.closePath();
+            this.ctx.strokeStyle = '#4ecdc4';
+            this.ctx.lineWidth = 4;
+            this.ctx.stroke();
         }
     }
 
     drawBall(ball) {
         this.ctx.beginPath();
-        this.ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
-        this.ctx.fillStyle = ball.color;
-        this.ctx.fill();
-        this.ctx.strokeStyle = '#fff';
-        this.ctx.lineWidth = 2;
-        this.ctx.stroke();
-
-        const highlight = this.ctx.createRadialGradient(
-            ball.x - ball.radius * 0.3,
-            ball.y - ball.radius * 0.3,
-            0,
-            ball.x,
-            ball.y,
-            ball.radius
-        );
-        highlight.addColorStop(0, 'rgba(255, 255, 255, 0.8)');
-        highlight.addColorStop(1, 'rgba(255, 255, 255, 0)');
-
-        this.ctx.beginPath();
-        this.ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
-        this.ctx.fillStyle = highlight;
+        this.ctx.arc(ball.position.x, ball.position.y, ball.circleRadius || ball.radius, 0, Math.PI * 2);
+        this.ctx.fillStyle = ball.color || '#fff';
         this.ctx.fill();
     }
 
     draw() {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-
-        this.board.draw(this.ctx);
-
-        for (const ball of this.balls) {
-            this.drawBall(ball);
+        this.drawBody(this.board);
+        for (const b of this.balls) {
+            this.drawBall(b);
         }
     }
 
     animate() {
-        this.updatePhysics();
+        this.update();
         this.draw();
-        this.animationId = requestAnimationFrame(() => this.animate());
-    }
-
-    destroy() {
-        cancelAnimationFrame(this.animationId);
-        if (this.boundClick) {
-            this.canvas.removeEventListener('click', this.boundClick);
-        }
-        this.balls = [];
+        requestAnimationFrame(() => this.animate());
     }
 }
