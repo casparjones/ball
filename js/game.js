@@ -55,9 +55,6 @@ export default class BouncingBallGame {
     }
 
     isInside(x, y) {
-        if (this.board.vertices && this.board.vertices.length && Matter.Vertices) {
-            return Matter.Vertices.contains(this.board.vertices, { x, y });
-        }
         const dx = x - this.centerX;
         const dy = y - this.centerY;
         return Math.sqrt(dx * dx + dy * dy) <= this.radius - 20;

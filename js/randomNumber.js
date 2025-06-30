@@ -53,9 +53,9 @@ export default class RandomNumberGame {
 
     update() {
         updateEngine(this.engine);
-        if (this.ball.position.y > this.canvas.height - this.slotHeight - 20) {
-            Matter.Body.setVelocity(this.ball, { x: 0, y: 0 });
-            Matter.Body.setPosition(this.ball, { x: this.ball.position.x, y: this.canvas.height - this.slotHeight - 20 });
+        if (this.ball && this.ball.body.position.y > this.canvas.height - this.slotHeight - 20) {
+            Matter.Body.setVelocity(this.ball.body, { x: 0, y: 0 });
+            Matter.Body.setPosition(this.ball.body, { x: this.ball.body.position.x, y: this.canvas.height - this.slotHeight - 20 });
         }
     }
 
