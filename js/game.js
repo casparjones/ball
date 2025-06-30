@@ -1,4 +1,4 @@
-import { createEngine, updateEngine, createPolygon, addBody, rotate, Matter } from './physics.js';
+import { createEngine, updateEngine, addBody, Matter } from './physics.js';
 import Ball from './ball.js';
 
 export default class BouncingBallGame {
@@ -9,8 +9,7 @@ export default class BouncingBallGame {
         this.centerY = this.canvas.height / 2;
         this.radius = 360;
         this.engine = createEngine(0.6);
-        this.board = createPolygon(this.centerX, this.centerY, 8, this.radius, { isStatic: true });
-        addBody(this.engine, this.board);
+        this.createBoard();
         this.rotationSpeed = 0.01;
         this.boardAngle = 0;
         this.balls = [];
@@ -18,6 +17,25 @@ export default class BouncingBallGame {
         this.addBall(this.centerX, this.centerY);
         this.setupMouse();
         this.animate();
+    }
+
+    createBoard() {
+        this.board = [];
+        this.sides = 8;
+        this.wallThickness = 20;
+        this.angleStep = Math.PI * 2 / this.sides;
+        this.wallDistance = this.radius * Math.cos(this.angleStep / 2);
+        this.wallLength = 2 * this.radius * Math.sin(this.angleStep / 2);
+        for (let i = 0; i < this.sides; i++) {
+            const angle = i * this.angleStep + this.angleStep / 2;
+            const x = this.centerX + Math.cos(angle) * this.wallDistance;
+            const y = this.centerY + Math.sin(angle) * this.wallDistance;
+            const wall = Matter.Bodies.rectangle(x, y, this.wallLength, this.wallThickness, { isStatic: true });
+            wall.baseAngle = angle;
+            Matter.Body.setAngle(wall, angle);
+            addBody(this.engine, wall);
+            this.board.push(wall);
+        }
     }
 
     createObstacles() {
@@ -62,7 +80,13 @@ export default class BouncingBallGame {
 
     update() {
         this.boardAngle += this.rotationSpeed;
-        rotate(this.board, this.rotationSpeed);
+        for (const wall of this.board) {
+            const angle = wall.baseAngle + this.boardAngle;
+            const x = this.centerX + Math.cos(angle) * this.wallDistance;
+            const y = this.centerY + Math.sin(angle) * this.wallDistance;
+            Matter.Body.setPosition(wall, { x, y });
+            Matter.Body.setAngle(wall, angle);
+        }
         const distance = this.radius - 20;
         for (const o of this.obstacles) {
             o.offsetAngle += this.rotationSpeed;
@@ -95,7 +119,7 @@ export default class BouncingBallGame {
 
     draw() {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-        this.drawBody(this.board);
+        for (const w of this.board) this.drawBody(w);
         for (const o of this.obstacles) this.drawBody(o);
         for (const b of this.balls) {
             this.drawBall(b);
