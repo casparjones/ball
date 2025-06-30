@@ -2,6 +2,8 @@
 
 Ein interaktives Physik-Spiel mit hüpfenden Bällen in einem rotierenden Oktagon.
 
+Dieses Projekt wurde komplett mithilfe von KI erstellt: Zuerst kam Claude Code zum Einsatz, anschließend erfolgten Erweiterungen mit OpenAI Codex.
+
 ## Beschreibung
 
 Dieses Projekt ist ein HTML5-Canvas-basiertes Spiel, das realistische Physik-Simulation mit visuell ansprechender Grafik kombiniert. Die Spieler können durch Klicken neue Bälle innerhalb eines rotierenden Oktagons erstellen, die dann mit Schwerkraft und Kollisionsdetektion interagieren.
@@ -88,11 +90,11 @@ Eine Live-Demo ist unter <https://casparjones.github.io/ball/> verfügbar.
 ## Projektstruktur
 
 ```
-public/
-├── index.html -> ../index.html  # Symlink auf Hauptdatei
-├── game.js            # Hauptspiel-Logik und Animation
-├── collision.js       # Kollisions-Engine und Physik
-└── style.css         # Basis-Styling und Layout
+css/                # Styling und Layout
+js/                 # Sämtliche Spiel- und Hilfs-Skripte
+img/                # Grafiken und Screenshots
+php/                # PHP-Hilfsdateien
+index.html          # Einstiegspunkt der Anwendung
 ```
 
 ## Anpassungen

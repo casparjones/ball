@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import CollisionEngine from '../public/collision.js';
+import CollisionEngine from '../js/collision.js';
 import test from 'node:test';
 
 test('isPointInsidePolygon returns false for point far outside', () => {

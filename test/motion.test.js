@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import MotionEngine from '../public/motion.js';
+import MotionEngine from '../js/motion.js';
 import test from 'node:test';
 
 test('updateBall applies gravity and updates position', () => {
