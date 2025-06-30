@@ -28,6 +28,20 @@ export default class LottoGame {
         );
         this.balls = [];
         this.drawnBalls = [];
+        this.continuousCollisionThreshold = 12;
+
+        this.obstacleAngle = 0;
+        this.obstacleDistance = this.radius * 0.6;
+        this.obstacle = {
+            handle: 'obstacle',
+            x: 0,
+            y: 0,
+            vx: 0,
+            vy: 0,
+            radius: 20
+        };
+        this.collisionEngine.registerObject('obstacle', this.obstacle);
+        this.updateObstaclePosition();
         this.state = 'loading';
         this.nextNumber = 1;
         this.loadInterval = setInterval(() => this.loadBall(), 300);
@@ -36,6 +50,15 @@ export default class LottoGame {
         this.doneCounter = 0;
         this.scoop = null; // animation object when drawing a ball
         this.animate();
+    }
+
+    updateObstaclePosition() {
+        this.obstacle.x =
+            this.centerX +
+            Math.cos(this.board.rotation + this.obstacleAngle) * this.obstacleDistance;
+        this.obstacle.y =
+            this.centerY +
+            Math.sin(this.board.rotation + this.obstacleAngle) * this.obstacleDistance;
     }
 
     loadBall() {
@@ -61,31 +84,62 @@ export default class LottoGame {
     }
 
     startScoop() {
-        if (this.balls.length === 0) return;
-        const index = Math.floor(Math.random() * this.balls.length);
-        const ball = this.balls.splice(index, 1)[0];
+        if (this.balls.length === 0 || this.scoop) return;
+        const angle = this.board.rotation + Math.PI;
+        const tolerance = Math.PI / 8;
+        let candidate = null;
+        let best = Infinity;
+        for (const b of this.balls) {
+            const dx = b.x - this.centerX;
+            const dy = b.y - this.centerY;
+            const r = Math.hypot(dx, dy);
+            const a = Math.atan2(dy, dx);
+            const diff = Math.abs(((a - angle + Math.PI) % (2 * Math.PI)) - Math.PI);
+            if (diff < tolerance && r > this.radius - 40 && diff < best) {
+                candidate = b;
+                best = diff;
+            }
+        }
+        if (!candidate) return;
+
+        const index = this.balls.indexOf(candidate);
+        if (index !== -1) {
+            this.balls.splice(index, 1);
+        }
         const spacing = 30;
         const endX = this.canvas.width - spacing * (this.drawnBalls.length + 1);
         const endY = this.canvas.height - 40;
 
         this.scoop = {
-            ball,
-            startX: ball.x,
-            startY: ball.y,
-            midX: this.centerX + this.radius + 30,
-            midY: this.centerY - this.radius - 30,
+            ball: candidate,
+            startX: candidate.x,
+            startY: candidate.y,
+            midX: this.centerX,
+            midY: this.centerY,
             endX,
             endY,
             progress: 0,
-            duration: 60
+            duration: 80
         };
     }
 
     updatePhysics() {
         for (const ball of this.balls) {
             ball.update();
-            const col = this.collisionEngine.checkCollisionByHandle(ball.handle, 'board');
+            const speed = Math.hypot(ball.vx, ball.vy);
+            let col = null;
+            if (speed > this.continuousCollisionThreshold) {
+                col = this.collisionEngine.checkContinuousCollision(
+                    ball,
+                    ball.prevX,
+                    ball.prevY
+                );
+            } else {
+                col = this.collisionEngine.checkCollisionByHandle(ball.handle, 'board');
+            }
             this.collisionEngine.resolveCollision(ball, col, ball.friction);
+            const ocol = this.collisionEngine.checkCollisionByHandle(ball.handle, 'obstacle');
+            this.collisionEngine.resolveCollision(ball, ocol, ball.friction);
             this.collisionEngine.constrainBall(ball);
         }
 
@@ -106,6 +160,7 @@ export default class LottoGame {
         }
 
         this.board.update();
+        this.updateObstaclePosition();
     }
 
     updateState() {
@@ -118,8 +173,10 @@ export default class LottoGame {
             }
         } else if (this.state === 'draw') {
             this.startScoop();
-            this.drawCounter = 0;
-            this.state = 'scoop';
+            if (this.scoop) {
+                this.drawCounter = 0;
+                this.state = 'scoop';
+            }
         } else if (this.state === 'scoop') {
             if (!this.scoop) {
                 if (this.drawnBalls.length >= 6) {
@@ -158,16 +215,43 @@ export default class LottoGame {
         this.ctx.fillText(String(ball.number), ball.x, ball.y);
     }
 
+    drawObstacle() {
+        this.ctx.beginPath();
+        this.ctx.arc(
+            this.obstacle.x,
+            this.obstacle.y,
+            this.obstacle.radius,
+            0,
+            Math.PI * 2
+        );
+        this.ctx.fillStyle = '#888';
+        this.ctx.fill();
+    }
+
+    drawArm() {
+        const angle = this.board.rotation + Math.PI;
+        const width = 20;
+        this.ctx.save();
+        this.ctx.translate(this.centerX, this.centerY);
+        this.ctx.rotate(angle);
+        this.ctx.fillStyle = '#bbb';
+        this.ctx.fillRect(0, -width / 2, this.radius, width);
+        this.ctx.beginPath();
+        this.ctx.arc(0, 0, width / 2, Math.PI / 2, -Math.PI / 2, true);
+        this.ctx.fill();
+        this.ctx.restore();
+    }
+
     updateScoop() {
         if (!this.scoop) return;
         const s = this.scoop;
         const t = s.progress / s.duration;
-        if (t < 0.5) {
-            const f = t / 0.5;
+        if (t < 0.6) {
+            const f = t / 0.6;
             s.ball.x = s.startX + (s.midX - s.startX) * f;
             s.ball.y = s.startY + (s.midY - s.startY) * f;
         } else {
-            const f = (t - 0.5) / 0.5;
+            const f = (t - 0.6) / 0.4;
             s.ball.x = s.midX + (s.endX - s.midX) * f;
             s.ball.y = s.midY + (s.endY - s.midY) * f;
         }
@@ -192,6 +276,8 @@ export default class LottoGame {
     draw() {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         this.board.draw(this.ctx);
+        this.drawObstacle();
+        this.drawArm();
         for (const ball of this.balls) {
             this.drawBall(ball);
         }
@@ -225,6 +311,7 @@ export default class LottoGame {
         this.drawCounter = 0;
         this.doneCounter = 0;
         this.scoop = null;
+        this.updateObstaclePosition();
     }
 
     destroy() {
@@ -233,6 +320,7 @@ export default class LottoGame {
         this.balls = [];
         this.drawnBalls = [];
         this.scoop = null;
+        this.collisionEngine.unregisterObject('obstacle');
     }
 }
 
