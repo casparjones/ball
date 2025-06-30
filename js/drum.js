@@ -9,13 +9,16 @@ export function createDrum(engine, centerX, centerY, radius, options = {}) {
     const wallDistance = radius * Math.cos(angleStep / 2);
 
     for (let i = 0; i < sides; i++) {
-        const angle = i * angleStep + angleStep / 2;
-        const x = centerX + Math.cos(angle) * wallDistance;
-        const y = centerY + Math.sin(angle) * wallDistance;
+        // angle from the drum center to the midpoint of the wall
+        const baseAngle = i * angleStep + angleStep / 2;
+        const x = centerX + Math.cos(baseAngle) * wallDistance;
+        const y = centerY + Math.sin(baseAngle) * wallDistance;
         const wall = Matter.Bodies.rectangle(x, y, wallLength, thickness, { isStatic: true, ...options });
-        wall.baseAngle = angle;
+        // store the radial angle so the drum can be rotated later
+        wall.baseAngle = baseAngle;
         wall.distance = wallDistance;
-        Matter.Body.setAngle(wall, angle);
+        // orient the wall so it forms one side of the octagon
+        Matter.Body.setAngle(wall, baseAngle + Math.PI / 2);
         addBody(engine, wall);
         walls.push(wall);
     }
@@ -28,6 +31,7 @@ export function rotateDrum(walls, centerX, centerY, delta) {
         const x = centerX + Math.cos(wall.baseAngle) * wall.distance;
         const y = centerY + Math.sin(wall.baseAngle) * wall.distance;
         Matter.Body.setPosition(wall, { x, y });
-        Matter.Body.setAngle(wall, wall.baseAngle);
+        // rotate the wall so it always lines up with the octagon
+        Matter.Body.setAngle(wall, wall.baseAngle + Math.PI / 2);
     }
 }
