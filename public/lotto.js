@@ -16,7 +16,8 @@ export default class LottoGame {
             this.centerX,
             this.centerY,
             this.radius,
-            this.sides
+            this.sides,
+            false
         );
         this.board = new Board(
             this.centerX,
@@ -24,7 +25,8 @@ export default class LottoGame {
             this.radius,
             this.sides,
             this.motionEngine,
-            this.collisionEngine
+            this.collisionEngine,
+            false
         );
         this.balls = [];
         this.drawnBalls = [];
@@ -46,6 +48,8 @@ export default class LottoGame {
         this.nextNumber = 1;
         this.loadInterval = setInterval(() => this.loadBall(), 300);
         this.mixCounter = 0;
+        this.rotationCounter = 0;
+        this.prevRotation = 0;
         this.drawCounter = 0;
         this.doneCounter = 0;
         this.scoop = null; // animation object when drawing a ball
@@ -165,11 +169,17 @@ export default class LottoGame {
 
     updateState() {
         if (this.state === 'mixing') {
-            this.mixCounter++;
-            if (this.mixCounter > 180) { // about 3 seconds
+            const delta = Math.abs(this.board.rotation - this.prevRotation);
+            if (delta >= Math.PI * 2) {
+                const turns = Math.floor(delta / (Math.PI * 2));
+                this.rotationCounter += turns;
+                this.prevRotation += Math.PI * 2 * turns * Math.sign(this.board.rotation - this.prevRotation);
+            }
+            if (this.rotationCounter >= 4) {
                 this.motionEngine.rotationSpeed *= -1;
                 this.state = 'draw';
-                this.mixCounter = 0;
+                this.rotationCounter = 0;
+                this.prevRotation = this.board.rotation;
             }
         } else if (this.state === 'draw') {
             this.startScoop();
@@ -191,10 +201,11 @@ export default class LottoGame {
             if (this.drawCounter > 360) { // ~6 seconds
                 this.state = 'mixing';
                 this.drawCounter = 0;
+                this.prevRotation = this.board.rotation;
             }
         } else if (this.state === 'done') {
             this.doneCounter++;
-            if (this.doneCounter > 1800) { // ~30 seconds
+            if (this.doneCounter > 1200) { // 20 seconds
                 this.reset();
             }
         }
@@ -288,6 +299,13 @@ export default class LottoGame {
         for (const ball of this.drawnBalls) {
             this.drawBall(ball);
         }
+        if (this.state === 'done') {
+            const seconds = Math.ceil(20 - this.doneCounter / 60);
+            this.ctx.fillStyle = '#fff';
+            this.ctx.font = '20px sans-serif';
+            this.ctx.textAlign = 'center';
+            this.ctx.fillText(`${seconds}`, this.centerX, 50);
+        }
     }
 
     animate() {
@@ -308,6 +326,8 @@ export default class LottoGame {
         clearInterval(this.loadInterval);
         this.loadInterval = setInterval(() => this.loadBall(), 300);
         this.mixCounter = 0;
+        this.rotationCounter = 0;
+        this.prevRotation = this.board.rotation;
         this.drawCounter = 0;
         this.doneCounter = 0;
         this.scoop = null;

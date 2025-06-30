@@ -1,7 +1,7 @@
 import CollisionObject from './collisionObject.js';
 
 export default class Board extends CollisionObject {
-    constructor(centerX, centerY, radius, sides, motionEngine, collisionEngine) {
+    constructor(centerX, centerY, radius, sides, motionEngine, collisionEngine, usePaddles = true) {
         super('board', collisionEngine);
         this.centerX = centerX;
         this.centerY = centerY;
@@ -9,10 +9,11 @@ export default class Board extends CollisionObject {
         this.sides = sides;
         this.motion = motionEngine;
         this.collisionEngine = collisionEngine;
+        this.usePaddles = usePaddles;
         this.rotation = 0;
         this.paddleRotation = 0;
-        this.paddleLength = this.radius * 0.4;
-        this.paddleWidth = 10;
+        this.paddleLength = this.usePaddles ? this.radius * 0.4 : 0;
+        this.paddleWidth = this.usePaddles ? 10 : 0;
         // Position paddles flush with the octagon edge so balls can't slip
         // between paddle and board. Previously the paddles were offset by
         // 20 pixels which created a noticeable gap. Moving them outward
@@ -27,7 +28,9 @@ export default class Board extends CollisionObject {
     update() {
         this.motion.updateRotation(this);
         // Keep paddles aligned with the board so they rotate at the same speed
-        this.paddleRotation = 0;
+        if (this.usePaddles) {
+            this.paddleRotation = 0;
+        }
         this.collisionEngine.setRotation(this.rotation);
         this.collisionEngine.setPaddleRotation(this.paddleRotation);
     }
@@ -66,23 +69,25 @@ export default class Board extends CollisionObject {
             ctx.stroke();
         }
 
-        // draw rotating paddles around the octagon edge
-        ctx.save();
-        ctx.rotate(this.paddleRotation);
-        ctx.fillStyle = '#999';
-        for (let i = 0; i < 4; i++) {
+        if (this.usePaddles) {
+            // draw rotating paddles around the octagon edge
             ctx.save();
-            ctx.rotate(i * Math.PI / 2);
-            ctx.translate(this.paddleDistance, 0);
-            ctx.fillRect(
-                -this.paddleLength / 2,
-                -this.paddleWidth / 2,
-                this.paddleLength,
-                this.paddleWidth
-            );
+            ctx.rotate(this.paddleRotation);
+            ctx.fillStyle = '#999';
+            for (let i = 0; i < 4; i++) {
+                ctx.save();
+                ctx.rotate(i * Math.PI / 2);
+                ctx.translate(this.paddleDistance, 0);
+                ctx.fillRect(
+                    -this.paddleLength / 2,
+                    -this.paddleWidth / 2,
+                    this.paddleLength,
+                    this.paddleWidth
+                );
+                ctx.restore();
+            }
             ctx.restore();
         }
-        ctx.restore();
 
         ctx.restore();
     }

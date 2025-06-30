@@ -1,12 +1,13 @@
 export default class CollisionEngine {
-    constructor(centerX, centerY, radius, sides = 8) {
+    constructor(centerX, centerY, radius, sides = 8, usePaddles = true) {
         this.centerX = centerX;
         this.centerY = centerY;
         this.radius = radius;
         this.sides = sides;
+        this.usePaddles = usePaddles;
         this.rotation = 0;
         this.paddleRotation = 0;
-        this.paddleLength = this.radius * 0.4;
+        this.paddleLength = this.usePaddles ? this.radius * 0.4 : 0;
         // Keep paddle edges aligned with the board boundary. Removing the
         // previous 20px offset prevents balls from slipping between the
         // paddles and the octagon.
@@ -16,7 +17,7 @@ export default class CollisionEngine {
         );
         this.vertices = this.generateVertices();
         this.edges = this.generateEdges();
-        this.paddleEdges = this.generatePaddleEdges();
+        this.paddleEdges = this.usePaddles ? this.generatePaddleEdges() : [];
         this.objects = new Map();
     }
 
@@ -112,6 +113,7 @@ export default class CollisionEngine {
     }
 
     getRotatedPaddleEdges() {
+        if (!this.usePaddles) return [];
         const total = this.rotation + this.paddleRotation;
         const cos = Math.cos(total);
         const sin = Math.sin(total);
