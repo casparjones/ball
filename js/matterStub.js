@@ -25,6 +25,15 @@ const Matter = {
       velocity:{x:0,y:0},
       restitution: opts.restitution ?? 0
     }),
+    rectangle: (x,y,w,h,opts={}) => ({
+      position:{x,y},
+      width:w,
+      height:h,
+      isStatic:!!opts.isStatic,
+      angle:0,
+      velocity:{x:0,y:0},
+      restitution: opts.restitution ?? 0
+    }),
     polygon: (x,y,sides,r,opts={}) => ({
       position:{x,y},
       sides,
@@ -35,7 +44,17 @@ const Matter = {
     })
   },
   Body: {
-    rotate: (body, angle) => { body.angle = (body.angle || 0) + angle; }
+    rotate: (body, angle) => { body.angle = (body.angle || 0) + angle; },
+    setPosition: (body, pos) => {
+      body.position.x = pos.x;
+      body.position.y = pos.y;
+    },
+    setVelocity: (body, vel) => {
+      if (!body.velocity) body.velocity = {x:0,y:0};
+      if (vel.x !== undefined) body.velocity.x = vel.x;
+      if (vel.y !== undefined) body.velocity.y = vel.y;
+    },
+    setAngle: (body, angle) => { body.angle = angle; }
   }
 };
 export default Matter;

@@ -1,4 +1,5 @@
-import { createEngine, updateEngine, createBall, addBody, Matter } from './physics.js';
+import { createEngine, updateEngine, addBody, Matter } from './physics.js';
+import Ball from './ball.js';
 
 export default class RandomNumberGame {
     constructor(canvas) {
@@ -47,9 +48,7 @@ export default class RandomNumberGame {
     }
 
     spawnBall() {
-        const slotWidth = this.canvas.width / 25;
-        this.ball = createBall(this.canvas.width / 2, 0, 10, { restitution: 0.5 });
-        addBody(this.engine, this.ball);
+        this.ball = new Ball(this.engine, this.canvas.width / 2, 0, 10, '');
     }
 
     update() {
@@ -73,10 +72,7 @@ export default class RandomNumberGame {
             }
         }
         if (this.ball) {
-            this.ctx.beginPath();
-            this.ctx.arc(this.ball.position.x, this.ball.position.y, this.ball.circleRadius, 0, Math.PI * 2);
-            this.ctx.fillStyle = '#ff6b6b';
-            this.ctx.fill();
+            this.ball.draw(this.ctx);
         }
     }
 

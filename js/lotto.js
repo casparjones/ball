@@ -1,4 +1,5 @@
-import { createEngine, updateEngine, createBall, createPolygon, addBody, rotate, Matter } from './physics.js';
+import { createEngine, updateEngine, createPolygon, addBody, rotate, Matter } from './physics.js';
+import Ball from './ball.js';
 
 export default class LottoGame {
     constructor(canvas = document.getElementById('gameCanvas')) {
@@ -16,10 +17,7 @@ export default class LottoGame {
             const r = this.radius * 0.5;
             const x = this.centerX + Math.cos(angle) * r;
             const y = this.centerY + Math.sin(angle) * r;
-            const ball = createBall(x, y, 12, { restitution: 0.9 });
-            ball.number = i;
-            ball.color = '#feca57';
-            addBody(this.engine, ball);
+            const ball = new Ball(this.engine, x, y, 12, i, { color: '#feca57', restitution: 0.9 });
             this.balls.push(ball);
         }
         this.rotationSpeed = 0.01;
@@ -32,15 +30,7 @@ export default class LottoGame {
     }
 
     drawBall(ball) {
-        this.ctx.beginPath();
-        this.ctx.arc(ball.position.x, ball.position.y, ball.circleRadius || 12, 0, Math.PI * 2);
-        this.ctx.fillStyle = ball.color;
-        this.ctx.fill();
-        this.ctx.fillStyle = '#000';
-        this.ctx.font = '10px sans-serif';
-        this.ctx.textAlign = 'center';
-        this.ctx.textBaseline = 'middle';
-        this.ctx.fillText(String(ball.number), ball.position.x, ball.position.y);
+        ball.draw(this.ctx);
     }
 
     draw() {
